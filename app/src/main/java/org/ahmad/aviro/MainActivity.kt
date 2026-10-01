@@ -49,17 +49,25 @@ fun App() {
 
     // تهيئة yt-dlp و ffmpeg مرة واحدة
     LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
+    withContext(Dispatchers.IO) {
+        try {
+            YoutubeDL.getInstance().init(ctx)
+            FFmpeg.getInstance().init(ctx)
+
+            status = "جارٍ تحديث yt-dlp..."
             try {
-                YoutubeDL.getInstance().init(ctx)
-                FFmpeg.getInstance().init(ctx)
-                ready = true
-                status = "جاهز"
-            } catch (e: Exception) {
-                status = "فشلت التهيئة: ${e.message}"
+                YoutubeDL.getInstance().updateYoutubeDL(ctx)
+            } catch (_: Exception) {
+                // لا إنترنت أو فشل التحديث: نكمل بالنسخة الموجودة
             }
+
+            ready = true
+            status = "جاهز — yt-dlp ${YoutubeDL.getInstance().version(ctx)}"
+        } catch (e: Exception) {
+            status = "فشلت التهيئة: ${e.message}"
         }
     }
+}
 
     Column(
         Modifier
